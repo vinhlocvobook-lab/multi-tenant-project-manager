@@ -24,6 +24,9 @@ export class User {
   @ManyToOne(() => Tenant)
   tenant!: Tenant;
 
+  @Property({ nullable: true, hidden: true })
+  currentRefreshToken?: string;
+
   @Property({ persist: false })
   get tenantId(): string {
     return this.tenant.id;
@@ -42,5 +45,15 @@ export class User {
 
   async validatePassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.password);
+  }
+
+  async setCurrentRefreshToken(refreshToken: string): Promise<void> {
+    const salt = await bcrypt.genSalt();
+    this.currentRefreshToken = await bcrypt.hash(refreshToken, salt);
+  }
+
+  async validateRefreshToken(refreshToken: string): Promise<boolean> {
+    if (!this.currentRefreshToken) return false;
+    return bcrypt.compare(refreshToken, this.currentRefreshToken);
   }
 }

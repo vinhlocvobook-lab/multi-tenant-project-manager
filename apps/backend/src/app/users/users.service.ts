@@ -38,4 +38,16 @@ export class UsersService {
     await this.em.persistAndFlush(user);
     return user;
   }
+
+  async findOne(id: string): Promise<User> {
+    const user = await this.userRepository.findOne(id, { populate: ['tenant'] });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  async update(user: User): Promise<void> {
+    await this.em.persistAndFlush(user);
+  }
 }

@@ -1,5 +1,6 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
@@ -7,8 +8,14 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   
-  // Enable CORS
-  app.enableCors();
+  // Enable cookie parser
+  app.use(cookieParser());
+
+  // Enable CORS with credentials support
+  app.enableCors({
+    origin: true, // In production, replace with specific origins
+    credentials: true,
+  });
 
   // Enable validation globally
   app.useGlobalPipes(new ValidationPipe({
