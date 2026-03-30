@@ -10,7 +10,7 @@ export abstract class BaseTenantEntity {
   @ManyToOne(() => Tenant)
   tenant!: Tenant;
 
-  @Property({ persist: false })
+  @Property({ persist: false, type: 'string' })
   get tenantId(): string {
     return this.tenant.id;
   }

@@ -1,7 +1,10 @@
-import { Entity, Property, ManyToOne } from '@mikro-orm/core';
+import { Entity, Property, ManyToOne, OneToMany, Collection } from '@mikro-orm/core';
 import { BaseTenantEntity } from '../../common/entities/base-tenant.entity';
 import { Project } from '../../projects/entities/project.entity';
 import { User } from '../../users/entities/user.entity';
+import { Partner } from '../../partners/entities/partner.entity';
+import { StatusDefinition } from '../../metadata/entities/status-definition.entity';
+import { PriorityDefinition } from '../../metadata/entities/priority-definition.entity';
 
 @Entity({ tableName: 'tasks' })
 export class Task extends BaseTenantEntity {
@@ -11,22 +14,26 @@ export class Task extends BaseTenantEntity {
   @Property({ type: 'text', nullable: true })
   description?: string;
 
-  @Property({ default: 'todo' })
-  status: 'todo' | 'in-progress' | 'review' | 'done' = 'todo';
+  @ManyToOne(() => StatusDefinition)
+  status!: StatusDefinition;
 
-  @Property({ default: 'medium' })
-  priority: 'low' | 'medium' | 'high' | 'urgent' = 'medium';
+  @ManyToOne(() => PriorityDefinition)
+  priority!: PriorityDefinition;
 
-  @ManyToOne(() => Project)
-  project!: Project;
+  @ManyToOne(() => Project, { nullable: true })
+  project?: Project;
 
-  @Property({ persist: false })
-  get projectId(): string {
-    return this.project.id;
-  }
+  @ManyToOne(() => Partner, { nullable: true })
+  client?: Partner;
 
   @ManyToOne(() => User, { nullable: true })
   assignee?: User;
+
+  @ManyToOne(() => Task, { nullable: true })
+  parentTask?: Task;
+
+  @OneToMany(() => Task, (task) => task.parentTask)
+  subTasks = new Collection<Task>(this);
 
   @Property({ nullable: true })
   dueDate?: Date;

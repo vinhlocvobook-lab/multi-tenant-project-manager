@@ -9,6 +9,9 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
+import { MetadataModule } from './metadata/metadata.module';
+import { DepartmentsModule } from './departments/departments.module';
+import { PartnersModule } from './partners/partners.module';
 import { TenantInterceptor } from './common/interceptors/tenant.interceptor';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
@@ -26,6 +29,9 @@ import mikroOrmConfig from '../mikro-orm.config';
     AuthModule,
     ProjectsModule,
     TasksModule,
+    MetadataModule,
+    DepartmentsModule,
+    PartnersModule,
   ],
   controllers: [AppController],
   providers: [

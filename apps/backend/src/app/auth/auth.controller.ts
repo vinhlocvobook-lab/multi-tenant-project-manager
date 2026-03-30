@@ -1,9 +1,9 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Res, Req, UseGuards, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Res, Req, UseGuards } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
-import { LoginDto } from '@multi-tenant/shared-types';
+import { LoginDto, AuthResponse } from '@multi-tenant/shared-types';
 import { Public } from '../common/decorators/public.decorator';
 
 @Controller('auth')
@@ -16,7 +16,7 @@ export class AuthController {
   @Post('login')
   @Public()
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response): Promise<AuthResponse> {
     const { refreshToken, ...response } = await this.authService.login(loginDto);
     
     this.setRefreshTokenCookie(res, refreshToken);
@@ -28,20 +28,21 @@ export class AuthController {
   @Public()
   @UseGuards(AuthGuard('jwt-refresh'))
   @HttpCode(HttpStatus.OK)
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<Partial<AuthResponse>> {
     const user = req.user as any;
-    const result = await this.authService.refreshTokens(user.sub, user.refreshToken);
+    const rawRefreshToken = req.cookies?.refreshToken || '';
+    const { refreshToken, accessToken } = await this.authService.refreshTokens(user.sub, rawRefreshToken);
     
-    this.setRefreshTokenCookie(res, result.refreshToken);
+    this.setRefreshTokenCookie(res, refreshToken);
 
-    return { accessToken: result.accessToken };
+    return { accessToken };
   }
 
   @Post('logout')
   @UseGuards(AuthGuard('jwt'))
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const user = req.user as any;
-    await this.authService.logout(user.userId); // userId comes from JwtStrategy validate()
+    await this.authService.logout(user.sub);
     res.clearCookie('refreshToken');
     return { message: 'Logged out successfully' };
   }
@@ -53,11 +54,5 @@ export class AuthController {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-  }
-
-  @Post('register')
-  @Public()
-  async register(@Body() userData: { email: string; password: string; fullName: string; tenantId: string }) {
-    return this.usersService.create(userData);
   }
 }

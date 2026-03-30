@@ -59,6 +59,13 @@
           "buildTarget": "backend:build:production"
         }
       }
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node -r ts-node/register -r tsconfig-paths/register apps/backend/src/scripts/professional-seed.ts",
+        "cwd": "."
+      }
     }
   },
   "tags": []

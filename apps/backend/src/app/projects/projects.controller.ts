@@ -8,15 +8,26 @@ export class ProjectsController {
 
   @Post()
   async create(
-    @Body() createProjectDto: { name: string; description?: string },
+    @Body() dto: { 
+      name: string; 
+      description?: string; 
+      statusId?: string;
+      priorityId?: string;
+      startDate?: Date;
+      endDate?: Date;
+      leaderIds?: string[];
+      departmentIds?: string[];
+      clientId?: string;
+    },
     @GetUser('tenantId') tenantId: string,
+    @GetUser('id') userId: string,
   ) {
-    return this.projectsService.create(createProjectDto, tenantId);
+    return this.projectsService.create(dto, tenantId);
   }
 
   @Get()
-  async findAll() {
-    return this.projectsService.findAll();
+  async findAll(@GetUser('tenantId') tenantId: string) {
+    return this.projectsService.findAll(tenantId);
   }
 
   @Get(':id')

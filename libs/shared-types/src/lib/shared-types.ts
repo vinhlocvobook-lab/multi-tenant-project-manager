@@ -1,7 +1,23 @@
+export enum UserRole {
+  ADMIN = 'admin',
+  MANAGER = 'manager',
+  USER = 'user',
+}
+
+export enum EntityType {
+  PROJECT = 'PROJECT',
+  TASK = 'TASK',
+}
+
+export enum PartnerType {
+  CLIENT = 'client',
+  PARTNER = 'partner',
+}
+
 export interface Tenant {
   id: string;
   name: string;
-  slug: string; // Used for subdomains/URL paths
+  slug: string;
   dbConfig?: {
     type: 'shared' | 'dedicated';
     connectionString?: string;
@@ -14,35 +30,59 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: 'admin' | 'manager' | 'agent';
+  role: UserRole;
+  tenantId: string;
+  departmentId?: string;
+  position?: string;
+}
+
+export interface StatusDefinition {
+  id: string;
+  name: string;
+  color: string;
+  type: EntityType;
+  weight: number;
+  isDefault: boolean;
   tenantId: string;
 }
 
-export interface CallRecord {
+export interface PriorityDefinition {
   id: string;
+  name: string;
+  color: string;
+  weight: number; // Higher weight = higher priority
+  type: EntityType;
   tenantId: string;
-  callerNumber: string;
-  destinationNumber: string;
-  startTime: Date;
-  endTime?: Date;
-  duration?: number;
-  recordPath: string; // The Asterisk recording path
-  direction: 'inbound' | 'outbound';
-  status: 'completed' | 'busy' | 'no-answer' | 'failed';
-  aiMetadata?: {
-    transcription?: string;
-    sentiment?: string;
-    summary?: string;
-    interface: string;
-    confidenceScore?: number;
-  };
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  description?: string;
+  tenantId: string;
+  leaderIds: string[]; // List of User IDs
+}
+
+export interface Partner {
+  id: string;
+  name: string;
+  type: PartnerType;
+  contactEmail?: string;
+  phone?: string;
+  tenantId: string;
 }
 
 export interface Project {
   id: string;
   name: string;
   description?: string;
-  status: 'active' | 'archived' | 'completed';
+  statusId: string;
+  status?: StatusDefinition;
+  priorityId: string;
+  priority?: PriorityDefinition;
+  startDate?: Date;
+  endDate?: Date;
+  leaderIds: string[];
   tenantId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -52,9 +92,13 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  status: 'todo' | 'in-progress' | 'review' | 'done';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  projectId: string;
+  statusId: string;
+  status?: StatusDefinition;
+  priorityId: string;
+  priority?: PriorityDefinition;
+  projectId?: string; // Optional for independent tasks
+  clientId?: string;  // Linked to a Partner
+  parentTaskId?: string; // For sub-tasks
   tenantId: string;
   assigneeId?: string;
   dueDate?: Date;
@@ -62,6 +106,17 @@ export interface Task {
   updatedAt: Date;
 }
 
+export interface TaskComment {
+  id: string;
+  content: string;
+  taskId: string;
+  authorId: string;
+  author?: User;
+  tenantId: string;
+  createdAt: Date;
+}
+
+// DTOs for Auth
 export interface LoginDto {
   email: string;
   password: string;

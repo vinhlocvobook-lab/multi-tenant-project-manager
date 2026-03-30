@@ -1,13 +1,11 @@
-import { Entity, PrimaryKey, Property, ManyToOne, Unique } from '@mikro-orm/core';
-import { v4 as uuidv4 } from 'uuid';
+import { Entity, Property, ManyToOne, Unique, Enum } from '@mikro-orm/core';
 import * as bcrypt from 'bcrypt';
-import { Tenant } from '../../tenants/entities/tenant.entity';
+import { BaseTenantEntity } from '../../common/entities/base-tenant.entity';
+import { Department } from '../../departments/entities/department.entity';
+import { UserRole } from '@multi-tenant-project-manager/shared-types';
 
 @Entity({ tableName: 'users' })
-export class User {
-  @PrimaryKey({ type: 'uuid' })
-  id: string = uuidv4();
-
+export class User extends BaseTenantEntity {
   @Property()
   @Unique()
   email!: string;
@@ -18,25 +16,17 @@ export class User {
   @Property()
   fullName!: string;
 
-  @Property({ default: 'agent' })
-  role: 'admin' | 'manager' | 'agent' = 'agent';
+  @Enum(() => UserRole)
+  role: UserRole = UserRole.USER;
 
-  @ManyToOne(() => Tenant)
-  tenant!: Tenant;
+  @Property({ nullable: true })
+  position?: string;
 
-  @Property({ nullable: true, hidden: true })
+  @ManyToOne(() => Department, { nullable: true })
+  department?: Department;
+
+  @Property({ nullable: true, hidden: true, type: 'text' })
   currentRefreshToken?: string;
-
-  @Property({ persist: false })
-  get tenantId(): string {
-    return this.tenant.id;
-  }
-
-  @Property()
-  createdAt: Date = new Date();
-
-  @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
 
   async setPassword(password: string): Promise<void> {
     const salt = await bcrypt.genSalt();

@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@multi-tenant-project-manager/shared-types": ["libs/shared-types/src/index.ts"],
       "@multi-tenant/shared-types": ["libs/shared-types/src/index.ts"]
     }
   },

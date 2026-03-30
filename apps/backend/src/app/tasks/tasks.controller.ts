@@ -10,15 +10,27 @@ export class TasksController {
 
   @Post()
   async create(
-    @Body() createTaskDto: { title: string; description?: string; projectId: string },
+    @Body() dto: { 
+      title: string; 
+      description?: string; 
+      projectId?: string; 
+      statusId?: string;
+      priorityId?: string;
+      assigneeId?: string;
+      parentTaskId?: string;
+      clientId?: string;
+    },
     @GetUser('tenantId') tenantId: string,
   ) {
-    return this.tasksService.create(createTaskDto, tenantId);
+    return this.tasksService.create(dto, tenantId);
   }
 
   @Get()
-  async findAll(@Query('projectId') projectId?: string) {
-    return this.tasksService.findAll(projectId);
+  async findAll(
+    @Query('projectId') projectId: string,
+    @GetUser('tenantId') tenantId: string,
+  ) {
+    return this.tasksService.findAll({ projectId, tenantId });
   }
 
   @Get(':id')

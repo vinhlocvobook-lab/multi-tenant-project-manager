@@ -1,10 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "noImplicitAny": false
+    "baseUrl": ".",
+    "paths": {
+      "@multi-tenant-project-manager/shared-types": ["libs/shared-types/src/index.ts"],
+      "@multi-tenant/shared-types": ["libs/shared-types/src/index.ts"]
+    }
   }
 }
