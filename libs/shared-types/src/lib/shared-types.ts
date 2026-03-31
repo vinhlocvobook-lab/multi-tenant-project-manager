@@ -26,11 +26,25 @@ export interface Tenant {
   updatedAt: Date;
 }
 
+export interface Permission {
+  id: string; // e.g., 'projects:create'
+  name: string;
+  description?: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  tenantId: string;
+  permissions: Permission[] | string[];
+}
+
 export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: UserRole;
+  role: Role;
   tenantId: string;
   departmentId?: string;
   position?: string;

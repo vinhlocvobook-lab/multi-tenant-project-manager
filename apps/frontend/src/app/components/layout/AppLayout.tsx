@@ -91,7 +91,7 @@ const AppLayout: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-semibold text-slate-900">{user?.fullName}</p>
-                <p className="text-xs text-slate-500">{user?.role}</p>
+                <p className="text-xs text-slate-500">{user?.role?.name}</p>
               </div>
               <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
                 <UserIcon size={24} />

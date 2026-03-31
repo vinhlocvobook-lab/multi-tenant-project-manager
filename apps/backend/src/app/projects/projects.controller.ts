@@ -1,12 +1,14 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { GetUser } from '../common/decorators/get-user.decorator';
+import { RequirePermissions } from '../common/decorators/permissions.decorator';
 
 @Controller('projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
+  @RequirePermissions('projects:create')
   async create(
     @Body() dto: { 
       name: string; 
@@ -26,11 +28,13 @@ export class ProjectsController {
   }
 
   @Get()
+  @RequirePermissions('projects:read')
   async findAll(@GetUser('tenantId') tenantId: string) {
     return this.projectsService.findAll(tenantId);
   }
 
   @Get(':id')
+  @RequirePermissions('projects:read')
   async findOne(@Param('id') id: string) {
     return this.projectsService.findOne(id);
   }

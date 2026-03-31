@@ -10,6 +10,8 @@ import { Partner } from './app/partners/entities/partner.entity';
 import { TaskComment } from './app/tasks/entities/task-comment.entity';
 import { StatusDefinition } from './app/metadata/entities/status-definition.entity';
 import { PriorityDefinition } from './app/metadata/entities/priority-definition.entity';
+import { Role } from './app/auth/entities/role.entity';
+import { Permission } from './app/auth/entities/permission.entity';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -31,6 +33,8 @@ const config: Options = {
     TaskComment,
     StatusDefinition,
     PriorityDefinition,
+    Role,
+    Permission,
   ],
   metadataProvider: ReflectMetadataProvider,
   extensions: [Migrator],

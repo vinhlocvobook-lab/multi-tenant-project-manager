@@ -9,6 +9,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hasPermission: (permission: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,9 +27,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (storedUser) {
         try {
           const response = await apiClient.post('/auth/refresh');
-          const { accessToken } = response.data;
+          const { accessToken, user: updatedUser } = response.data;
           setToken(accessToken);
           setAccessToken(accessToken);
+          // Update user from the refresh response (has latest role/permissions)
+          if (updatedUser) {
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+          }
         } catch (error) {
           localStorage.removeItem('user');
           setToken(null);
@@ -62,6 +68,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const hasPermission = (permission: string): boolean => {
+    if (!user || !user.role || !user.role.permissions) return false;
+    // user.role.permissions is a string[] in the AuthResponse from backend
+    return (user.role.permissions as string[]).includes(permission);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -69,8 +81,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         login,
         logout,
-        isAuthenticated: !!token,
+        isAuthenticated: !!token && !!user,
         isLoading,
+        hasPermission,
       }}
     >
       {children}

@@ -23,7 +23,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const tokens = await this.getTokens(user.id, user.email, user.tenant.id, user.role);
+    // Ensure role and permissions are loaded
+    const permissions = user.role.permissions.getItems().map(p => p.id);
+    const tokens = await this.getTokens(user.id, user.email, user.tenant.id, user.role.name, permissions);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -31,7 +33,12 @@ export class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
-        role: user.role,
+        role: {
+          id: user.role.id,
+          name: user.role.name,
+          tenantId: user.tenant.id,
+          permissions: permissions
+        },
         tenantId: user.tenant.id,
       } as any,
       ...tokens,
@@ -55,7 +62,8 @@ export class AuthService {
       throw new ForbiddenException('Access Denied');
     }
 
-    const tokens = await this.getTokens(user.id, user.email, user.tenant.id, user.role);
+    const permissions = user.role.permissions.getItems().map(p => p.id);
+    const tokens = await this.getTokens(user.id, user.email, user.tenant.id, user.role.name, permissions);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -63,7 +71,12 @@ export class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
-        role: user.role,
+        role: {
+          id: user.role.id,
+          name: user.role.name,
+          tenantId: user.tenant.id,
+          permissions: permissions
+        },
         tenantId: user.tenant.id,
       } as any,
       ...tokens,
@@ -76,17 +89,18 @@ export class AuthService {
     await this.usersService.update(user);
   }
 
-  async getTokens(userId: string, email: string, tenantId: string, role: string) {
+  async getTokens(userId: string, email: string, tenantId: string, roleName: string, permissions: string[]) {
+    const payload = { sub: userId, email, tenantId, role: roleName, permissions };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { sub: userId, email, tenantId, role },
+        payload,
         {
           secret: this.configService.get<string>('JWT_SECRET'),
           expiresIn: '15m',
         }
       ),
       this.jwtService.signAsync(
-        { sub: userId, email, tenantId, role },
+        payload,
         {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
           expiresIn: '7d',

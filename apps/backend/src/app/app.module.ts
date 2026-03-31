@@ -15,6 +15,7 @@ import { PartnersModule } from './partners/partners.module';
 import { TenantInterceptor } from './common/interceptors/tenant.interceptor';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { PermissionsGuard } from './auth/guards/permissions.guard';
 import mikroOrmConfig from '../mikro-orm.config';
 
 @Module({
@@ -43,6 +44,10 @@ import mikroOrmConfig from '../mikro-orm.config';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
     },
     {
       provide: APP_INTERCEPTOR,

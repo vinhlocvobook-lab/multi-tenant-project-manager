@@ -11,7 +11,9 @@ import { Task } from '../app/tasks/entities/task.entity';
 import { TaskComment } from '../app/tasks/entities/task-comment.entity';
 import { StatusDefinition } from '../app/metadata/entities/status-definition.entity';
 import { PriorityDefinition } from '../app/metadata/entities/priority-definition.entity';
-import { UserRole, EntityType, PartnerType } from '@multi-tenant-project-manager/shared-types';
+import { EntityType, PartnerType } from '@multi-tenant-project-manager/shared-types';
+import { Permission } from '../app/auth/entities/permission.entity';
+import { Role } from '../app/auth/entities/role.entity';
 import * as bcrypt from 'bcrypt';
 
 async function seed() {
@@ -99,6 +101,55 @@ async function seed() {
     client.tenant = tenant;
     em.persist(client);
 
+    // Fetch or create permissions
+    let permissions = await em.find(Permission, {});
+    if (permissions.length === 0) {
+      const perms = [
+        { id: 'projects:read', name: 'Xem dự án' },
+        { id: 'projects:create', name: 'Tạo dự án' },
+        { id: 'projects:update', name: 'Sửa dự án' },
+        { id: 'projects:delete', name: 'Xóa dự án' },
+        { id: 'tasks:read', name: 'Xem công việc' },
+        { id: 'tasks:create', name: 'Tạo công việc' },
+        { id: 'tasks:update', name: 'Sửa công việc' },
+        { id: 'tasks:delete', name: 'Xóa công việc' },
+        { id: 'users:manage', name: 'Quản lý người dùng' },
+        { id: 'roles:manage', name: 'Quản lý vai trò' },
+      ];
+      for (const p of perms) {
+        const perm = new Permission();
+        perm.id = p.id;
+        perm.name = p.name;
+        em.persist(perm);
+        permissions.push(perm);
+      }
+    }
+
+    // Create roles for the tenant
+    const adminRole = new Role();
+    adminRole.name = 'Admin';
+    adminRole.description = 'Toàn quyền hệ thống';
+    adminRole.tenant = tenant;
+    adminRole.isSystemRole = true;
+    permissions.forEach(p => adminRole.permissions.add(p));
+    em.persist(adminRole);
+
+    const managerRole = new Role();
+    managerRole.name = 'Manager';
+    managerRole.description = 'Quản lý dự án và công việc';
+    managerRole.tenant = tenant;
+    managerRole.isSystemRole = true;
+    permissions.filter(p => !p.id.includes('users') && !p.id.includes('roles')).forEach(p => managerRole.permissions.add(p));
+    em.persist(managerRole);
+
+    const userRole = new Role();
+    userRole.name = 'User';
+    userRole.description = 'Nhân viên';
+    userRole.tenant = tenant;
+    userRole.isSystemRole = true;
+    permissions.filter(p => p.id.includes('read')).forEach(p => userRole.permissions.add(p));
+    em.persist(userRole);
+
     // 5. Users (with positions)
     const hashedPass = await bcrypt.hash('password123', 10);
 
@@ -106,7 +157,7 @@ async function seed() {
     headOfIT.email = 'head.it@antigravity.com';
     headOfIT.password = hashedPass;
     headOfIT.fullName = 'John Doe';
-    headOfIT.role = UserRole.MANAGER;
+    headOfIT.role = managerRole;
     headOfIT.position = 'Head of IT';
     headOfIT.department = itDept;
     headOfIT.tenant = tenant;
@@ -115,7 +166,7 @@ async function seed() {
     deputyIT.email = 'deputy.it@antigravity.com';
     deputyIT.password = hashedPass;
     deputyIT.fullName = 'Jane Smith';
-    deputyIT.role = UserRole.MANAGER;
+    deputyIT.role = managerRole;
     deputyIT.position = 'Deputy Head of IT';
     deputyIT.department = itDept;
     deputyIT.tenant = tenant;
@@ -124,7 +175,7 @@ async function seed() {
     devUser.email = 'dev1@antigravity.com';
     devUser.password = hashedPass;
     devUser.fullName = 'Bob Developer';
-    devUser.role = UserRole.USER;
+    devUser.role = userRole;
     devUser.position = 'Senior Engineer';
     devUser.department = itDept;
     devUser.tenant = tenant;
@@ -133,7 +184,7 @@ async function seed() {
     adminUser.email = 'admin@acme.com';
     adminUser.password = hashedPass;
     adminUser.fullName = 'System Admin';
-    adminUser.role = UserRole.ADMIN;
+    adminUser.role = adminRole;
     adminUser.tenant = tenant;
 
     em.persist([headOfIT, deputyIT, devUser, adminUser]);

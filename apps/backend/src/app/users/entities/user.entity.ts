@@ -1,8 +1,8 @@
-import { Entity, Property, ManyToOne, Unique, Enum } from '@mikro-orm/core';
+import { Entity, Property, ManyToOne, Unique, Collection } from '@mikro-orm/core';
 import * as bcrypt from 'bcrypt';
 import { BaseTenantEntity } from '../../common/entities/base-tenant.entity';
 import { Department } from '../../departments/entities/department.entity';
-import { UserRole } from '@multi-tenant-project-manager/shared-types';
+import { Role } from '../../auth/entities/role.entity';
 
 @Entity({ tableName: 'users' })
 export class User extends BaseTenantEntity {
@@ -14,10 +14,11 @@ export class User extends BaseTenantEntity {
   password!: string;
 
   @Property()
+  @Unique()
   fullName!: string;
 
-  @Enum(() => UserRole)
-  role: UserRole = UserRole.USER;
+  @ManyToOne(() => Role)
+  role!: Role;
 
   @Property({ nullable: true })
   position?: string;

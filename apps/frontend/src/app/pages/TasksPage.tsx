@@ -12,6 +12,7 @@ import {
   ChevronDown,
   RefreshCw
 } from 'lucide-react';
+import { PermissionGate } from '../../components/auth/PermissionGate';
 
 const TasksPage: React.FC = () => {
   const [view, setView] = useState<'kanban' | 'list'>('kanban');
@@ -88,10 +89,12 @@ const TasksPage: React.FC = () => {
             </button>
           </div>
           
-          <button className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary-100 hover:-translate-y-0.5 active:scale-95">
-            <Plus size={20} className="stroke-[3]" />
-            New Task
-          </button>
+          <PermissionGate permission="tasks:create">
+            <button className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary-100 hover:-translate-y-0.5 active:scale-95">
+              <Plus size={20} className="stroke-[3]" />
+              New Task
+            </button>
+          </PermissionGate>
         </div>
       </div>
 

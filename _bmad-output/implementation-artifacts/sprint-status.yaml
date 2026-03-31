@@ -43,10 +43,10 @@ story_location: _bmad-output/implementation-artifacts/stories
 
 development_status:
   epic-1: in-progress
-  1-1-khoi-tao-workspace-cau-truc-core-project-init: ready-for-dev
-  1-2-dang-ky-doanh-nghiep-khoi-tao-tenant-tenant-onboarding: in-progress
-  1-3-dang-nhap-xac-thuc-da-doanh-nghiep-multi-tenant-jwt-auth: backlog
-  1-4-quan-ly-vai-tro-tuy-chinh-custom-rbac: backlog
+  1-1-khoi-tao-workspace-cau-truc-core-project-init: done
+  1-2-dang-ky-doanh-nghiep-khoi-tao-tenant-tenant-onboarding: backlog
+  1-3-dang-nhap-xac-thuc-da-doanh-nghiep-multi-tenant-jwt-auth: done
+  1-4-quan-ly-vai-tro-tuy-chinh-custom-rbac: ready-for-dev
   epic-1-retrospective: optional
 
   epic-2: backlog
